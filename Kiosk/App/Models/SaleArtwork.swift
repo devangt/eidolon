@@ -1,14 +1,24 @@
 import UIKit
 
-enum ReserveStatus {
-    case NoReserve
-    case ReserveNotMet(Int)
-    case ReserveMet
+public enum ReserveStatus: String {
+    case ReserveNotMet = "reserve_not_met"
+    case NoReserve = "no_reserve"
+    case ReserveMet = "reserve_met"
+
+    public var reserveNotMet: Bool {
+        return self == .ReserveNotMet
+    }
+
+    public static func initOrDefault (rawValue: String?) -> ReserveStatus {
+        return ReserveStatus(rawValue: rawValue ?? "") ?? .NoReserve
+    }
 }
 
 struct SaleNumberFormatter {
     static let dollarFormatter = createDollarFormatter()
 }
+
+private let kNoBidsString = "0 bids placed"
 
 class SaleArtwork: JSONAble {
 
@@ -32,6 +42,8 @@ class SaleArtwork: JSONAble {
     dynamic var highestBidCents: NSNumber?
     var lowEstimateCents: Int?
     var highEstimateCents: Int?
+
+    dynamic var reserveStatus: String?
 
     init(id: String, artwork: Artwork) {
         self.id = id
@@ -58,7 +70,7 @@ class SaleArtwork: JSONAble {
         saleArtwork.lowEstimateCents = json["low_estimate_cents"].int
         saleArtwork.highEstimateCents = json["high_estimate_cents"].int
         saleArtwork.bidCount = json["bidder_positions_count"].int
-//        let reserveStatus = json["reserve_status"].integer
+        saleArtwork.reserveStatus = json["reserve_status"].string
 
         return saleArtwork;
     }
@@ -101,7 +113,30 @@ class SaleArtwork: JSONAble {
                 let suffix = bidCount == 1 ? "" : "s"
                 return "\(bidCount) bid\(suffix) placed"
             } else {
-                return "0 bids placed"
+                return kNoBidsString
+            }
+        }
+    }
+
+    // The language used here is very specific – see https://github.com/artsy/eidolon/pull/325#issuecomment-64121996 for details
+    var numberOfBidsWithReserveSignal: RACSignal {
+        return RACSignal.combineLatest([numberOfBidsSignal, RACObserve(self, "reserveStatus")]).map { (object) -> AnyObject! in
+            let tuple = object as RACTuple
+            let numberOfBidsString = tuple.first as String
+            let reserveStatus = ReserveStatus.initOrDefault(tuple.second as? String)
+
+            // if there is no reserve, just return the number of bids string.
+            if reserveStatus == .NoReserve {
+                return numberOfBidsString
+            } else {
+                if numberOfBidsString == kNoBidsString {
+                    // If there are no bids, then return only this string.
+                    return "This lot has a reserve"
+                } else if reserveStatus == .ReserveNotMet {
+                    return "(\(numberOfBidsString), Reserve not met)"
+                } else { // implicitly, reserveStatus is .ReserveMet
+                    return "(\(numberOfBidsString), Reserve met)"
+                }
             }
         }
     }

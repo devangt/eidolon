@@ -19,6 +19,10 @@ public class AppDelegate: UIResponder, UIApplicationDelegate {
         // I couldn't figure how to swizzle this out like we do in objc.
         if let inTests: AnyClass = NSClassFromString("XCTest") { return true }
 
+        // Clear possible old contents from cache and defaults. 
+        let imageCache = SDImageCache.sharedImageCache()
+        imageCache.clearDisk()
+
         let defaults = NSUserDefaults.standardUserDefaults()
         defaults.removeObjectForKey(XAppToken.DefaultsKeys.TokenKey.rawValue)
         defaults.removeObjectForKey(XAppToken.DefaultsKeys.TokenExpiry.rawValue)

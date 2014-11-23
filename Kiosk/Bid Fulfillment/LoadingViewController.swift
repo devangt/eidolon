@@ -94,6 +94,7 @@ class LoadingViewController: UIViewController {
         let isHighestBidder = bidCheckingModel.isHighestBidder
         let bidIsResolved = bidCheckingModel.bidIsResolved
         let createdNewBidder = bidderNetworkModel.createdNewBidder
+        let reserveNotMet = bidCheckingModel.reserveNotMet
 
         if placingBid {
             ARAnalytics.event("Placed a bid", withProperties: ["top_bidder" : isHighestBidder])
@@ -121,7 +122,7 @@ class LoadingViewController: UIViewController {
         let showAuctionButton = !placingBid || createdNewBidder
         backToAuctionButton.hidden = !showAuctionButton
 
-        let title = createdNewBidder ? "CONTINUE" : "BACK TO AUCTION"
+        let title = reserveNotMet ? "NO, THANKS" : (createdNewBidder ? "CONTINUE" : "BACK TO AUCTION")
         backToAuctionButton.setTitle(title, forState: .Normal)
     }
 
@@ -133,6 +134,13 @@ class LoadingViewController: UIViewController {
     func handleUnknownBidder() {
         titleLabel.text = "Bid Confirmed"
         bidConfirmationImageView.image = UIImage(named: "BidHighestBidder")
+    }
+
+    func handleReserveNotMet() {
+        titleLabel.text = "Reserve Not Met"
+        statusMessage.hidden = false
+        statusMessage.text = "Your bid is still below this lot's reserve. Please place a higher bid."
+        bidConfirmationImageView.image = UIImage(named: "BidNotHighestBidder")
     }
 
     func handleHighestBidder() {
