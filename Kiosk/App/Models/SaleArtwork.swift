@@ -38,12 +38,13 @@ class SaleArtwork: JSONAble {
 
     dynamic var openingBidCents: NSNumber?
     dynamic var minimumNextBidCents: NSNumber?
-    
+
     dynamic var highestBidCents: NSNumber?
     var lowEstimateCents: Int?
     var highEstimateCents: Int?
 
     dynamic var reserveStatus: String?
+
 
     init(id: String, artwork: Artwork) {
         self.id = id

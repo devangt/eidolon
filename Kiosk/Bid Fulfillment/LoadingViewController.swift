@@ -101,7 +101,9 @@ class LoadingViewController: UIViewController {
 
             if bidIsResolved {
 
-                if (isHighestBidder) {
+                if (reserveNotMet) {
+                    handleReserveNotMet()
+                }else if (isHighestBidder) {
                     handleHighestBidder()
 
                 } else {
@@ -116,7 +118,7 @@ class LoadingViewController: UIViewController {
             handleRegistered()
         }
 
-        let showPlaceHigherButton = placingBid && !isHighestBidder
+        let showPlaceHigherButton = placingBid && (!isHighestBidder || reserveNotMet)
         placeHigherBidButton.hidden = !showPlaceHigherButton
 
         let showAuctionButton = !placingBid || createdNewBidder
