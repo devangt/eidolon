@@ -20,6 +20,7 @@ plugin 'cocoapods-keys', {
   ]
 }
 
+use_frameworks!
 platform :ios, '8.0'
 
 # Yep.
